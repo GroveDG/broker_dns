@@ -28,17 +28,25 @@ static LOOKUP: LazyLock<StubResolver> = LazyLock::new(|| StubResolver::new());
 
 #[tokio::main]
 async fn main() {
+    println!("Start");
+
     let config = TorClientConfig::default();
     let tor = TorClient::create_bootstrapped(config).await.unwrap();
+    
+    println!("Tor bootstrapped");
 
     let listener = TcpListener::bind(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80))
         .await
         .unwrap();
 
+    println!("Listening...");
+
     loop {
         let Ok((socket, _)) = listener.accept().await else {
             continue;
         };
+
+        println!("Socket accepted");
 
         let io = hyper_util::rt::TokioIo::new(socket);
 
@@ -76,7 +84,7 @@ async fn handle_connection(
         host
     };
 
-    print!("Resolved host");
+    println!("Resolved host");
 
     let stream = tor.connect((destination.as_str(), 80)).await?;
 
