@@ -60,6 +60,8 @@ async fn handle_connection(
     tor: TorClient<PreferredRuntime>,
     mut request: Request<hyper::body::Incoming>,
 ) -> Result<Response<BoxBody<Bytes, hyper::Error>>, DynErr> {
+    println!("Begin connection");
+
     let Some(host) = request.headers_mut().get_mut("host") else {
         return Ok(http_err(StatusCode::BAD_REQUEST));
     };
@@ -74,13 +76,19 @@ async fn handle_connection(
         host
     };
 
+    print!("Resolved host");
+
     let stream = tor.connect((destination.as_str(), 80)).await?;
+
+    println!("Connected through TOR");
 
     *host = HeaderValue::from_str(&destination)?;
 
     let stream = WithHyperIo::new(stream);
 
     let (mut send, con) = http1_client::handshake(stream).await?;
+
+    println!("Hand shook");
 
     tokio::task::spawn(async move {
         if let Err(err) = con.await {
@@ -89,6 +97,8 @@ async fn handle_connection(
     });
 
     let response = send.send_request(request).await?;
+
+    println!("Recieved response");
 
     return Ok(Response::new(response.into_body().boxed()));
 }
