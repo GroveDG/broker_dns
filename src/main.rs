@@ -35,7 +35,7 @@ async fn main() {
     
     println!("Tor bootstrapped");
 
-    let listener = TcpListener::bind(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80))
+    let listener = TcpListener::bind(SocketAddrV4::new(Ipv4Addr::new(0,0,0,0), 80))
         .await
         .unwrap();
 
